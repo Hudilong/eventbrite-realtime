@@ -3,7 +3,7 @@ const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server, {
   cors: {
-      origin: "http://localhost:6613",
+      origin: "http://localhost:3091",
       methods: ["GET", "POST"],
       transports: ['websocket', 'polling'],
       credentials: true
@@ -19,6 +19,11 @@ io.on('connection', () => {
 
 io.on('message', () => {
   print(message);
+
+  //send message to connected users
+
+
+  //send the message to the database
 });
 
 app.get('/', (req, res) => {
