@@ -3,7 +3,7 @@ const app = express();
 const server = require('http').createServer(app);
 const io = require('socket.io')(server, {
   cors: {
-      origin: "http://localhost:3091",
+      origin: "*",
       methods: ["GET", "POST"],
       transports: ['websocket', 'polling'],
       credentials: true
@@ -13,18 +13,19 @@ const io = require('socket.io')(server, {
 const PORT = process.env.PORT || 5000;
 
 
-io.on('connection', () => {
-    console.log("A user has connected")
+io.on('connection', (socket) => {
+    console.log("A user has connected");
+
+    //when server recieves a message
+    socket.on('message', (data) => {
+      socket.emit('message', data);
+    
+    });
+
+
 });
 
-io.on('message', () => {
-  print(message);
 
-  //send message to connected users
-
-
-  //send the message to the database
-});
 
 app.get('/', (req, res) => {
     res.send('Hello World!')
