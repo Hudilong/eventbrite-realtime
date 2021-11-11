@@ -24,11 +24,8 @@ io.on('connection', (socket) => {
       console.log(data.content);
 
       //Send the message to clients
-      socket.emit('message', data);
+      io.emit('message', data);
 
-      //Add Message to conversation
-
-      //Update lastMessage in conversation
     
     });
 
@@ -39,6 +36,7 @@ io.on('connection', (socket) => {
         .then(res => {
           console.log(`statusCode: ${res.status}`)
           console.log(res)
+          socket.emit('response', res);
         })
         .catch(error => {
           console.error(error)
