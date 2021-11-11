@@ -40,6 +40,7 @@ io.on('connection', (socket) => {
         })
         .catch(error => {
           console.error(error)
+          socket.emit('response', error);
         })
       
     });
