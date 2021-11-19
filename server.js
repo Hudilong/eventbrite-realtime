@@ -20,8 +20,15 @@ const io = require('socket.io')(server, {
   },
   allowEIO3: true
 });
-const PORT = process.env.PORT || 5000;
 
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+const PORT = process.env.PORT || 5000;
+server.listen(PORT, () => console.log(`server started on port ${PORT}`));
+
+
+///////////////   SOCKET.io   ///////////////////////
 
 //When a user connects
 io.on('connection', (socket) => {
@@ -67,7 +74,6 @@ io.on('connection', (socket) => {
         //If so: create new conversation
         conversation['convoId'] = '0x' + uuidv4().replace(/-/g, "");
         let res2 = await addConversation(conversation, eventId, connection);
-        console.log('from main: '+ JSON.stringify(res2));
         //Add message to new conversation
         if(res2 == 1) {
           addGroup(conversation, connection);
@@ -77,34 +83,18 @@ io.on('connection', (socket) => {
       }
       connection.end();
     });
-
     socket.on("connect_error", (err) => {
       console.log(`connect_error due to ${err.message}`);
     });
 });
 
-
-
-app.get('/', (req, res) => {
-    res.send('Hello World!')
-  })
-
-
-
-const newId = "LOWER(CONCAT('0x',REPLACE(UUID(),'-','')))";
-
-function id(type){
-    return "LOWER(CONCAT('0x',HEX("+type+")))";
-}
   
+////////////// SQL  //////////////////
 function tableId(table, type){
     return "LOWER(CONCAT('0x',HEX("+table+"."+type+")))";
 }
 
-
-
 function sendMessageDB(convoid, message, connection) {
-  console.log(JSON.stringify(message));
   let convoId = convoid.substring(2);
   let messageId = message['messageId'].substring(2);
   let sentBy = message['sentBy'].substring(2);
@@ -128,7 +118,6 @@ async function checkConversation(membersId, eventId, connection) {
   const query = util.promisify(connection.query).bind(connection);
   try{
     res = await query(req, [...membersId, eventId, membersId.length]);
-    console.log('check convo res: '+JSON.stringify(res));
     let data = {
       "res": !res.length? false: true,
       "rows": res};
@@ -136,13 +125,13 @@ async function checkConversation(membersId, eventId, connection) {
   } catch(err){ console.log(err); }
 }
 
+//add
 async function addConversation(conversation, eventId, connection) {
   let req =`INSERT INTO conversations (convoid, eventid, title, type, updatedAt)
             VALUES (UNHEX('${conversation['convoId'].substring(2)}'), UNHEX('${eventId.substring(2)}'), ?, ?, CURRENT_TIMESTAMP)`;
   const query = util.promisify(connection.query).bind(connection);
   try{
     res = await query(req, [conversation['title'], conversation['type']]);
-    console.log('add convo res: '+JSON.stringify(res));
     return res['affectedRows'];
   } catch(err){ console.log(err); }
 }
@@ -158,11 +147,5 @@ async function addGroup(conversation, connection){
   const query = util.promisify(connection.query).bind(connection);
   try {
     res = await query(finalReq);
-    console.log('add group res: '+JSON.stringify(res));
   } catch(err) { console.log(err); }
 }
-
-
-  
-
-server.listen(PORT, () => console.log(`server started on port ${PORT}`));
